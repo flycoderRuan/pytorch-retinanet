@@ -61,7 +61,7 @@ def main(args=None):
 
 	unnormalize = UnNormalizer()
 
-	path = ''
+	path = '/home/train_images/image38003.jpg'
 
 	img = skimage.io.imread(path)
 
