@@ -17,41 +17,34 @@ from torchvision import datasets, models, transforms
 from retinanet.dataloader import CocoDataset, CSVDataset, collater, Resizer, AspectRatioBasedSampler, Augmenter, \
 	UnNormalizer, Normalizer
 
-
 assert torch.__version__.split('.')[0] == '1'
 
 print('CUDA available: {}'.format(torch.cuda.is_available()))
 
-import skimage.io
-import skimage.transform
-import skimage.color
-import skimage
-
 def main(args=None):
-	# parser = argparse.ArgumentParser(description='Simple training script for training a RetinaNet network.')
-	#
-	# parser.add_argument('--dataset', help='Dataset type, must be one of csv or coco.')
-	# parser.add_argument('--coco_path', help='Path to COCO directory')
-	# parser.add_argument('--csv_classes', help='Path to file containing class list (see readme)')
-	# parser.add_argument('--csv_val', help='Path to file containing validation annotations (optional, see readme)')
-	#
-	# parser.add_argument('--model', help='Path to model (.pt) file.')
-	#
-	# parser = parser.parse_args(args)
-	#
-	# if parser.dataset == 'coco':
-	# 	dataset_val = CocoDataset(parser.coco_path, set_name='train2017', transform=transforms.Compose([Normalizer(), Resizer()]))
-	# elif parser.dataset == 'csv':
-	# 	dataset_val = CSVDataset(train_file=parser.csv_val, class_list=parser.csv_classes, transform=transforms.Compose([Normalizer(), Resizer()]))
-	# else:
-	# 	raise ValueError('Dataset type not understood (must be csv or coco), exiting.')
+	parser = argparse.ArgumentParser(description='Simple training script for training a RetinaNet network.')
 
-	# sampler_val = AspectRatioBasedSampler(dataset_val, batch_size=1, drop_last=False)
-	# dataloader_val = DataLoader(dataset_val, num_workers=1, collate_fn=collater, batch_sampler=sampler_val)
+	parser.add_argument('--dataset', help='Dataset type, must be one of csv or coco.')
+	parser.add_argument('--coco_path', help='Path to COCO directory')
+	parser.add_argument('--csv_classes', help='Path to file containing class list (see readme)')
+	parser.add_argument('--csv_val', help='Path to file containing validation annotations (optional, see readme)')
 
-	# retinanet = torch.load(parser.model)
+	parser.add_argument('--model', help='Path to model (.pt) file.')
 
-	retinanet = torch.load('/home/pytorch-retinanet/csv_retinanet_35.pt')
+	parser = parser.parse_args(args)
+
+	if parser.dataset == 'coco':
+		dataset_val = CocoDataset(parser.coco_path, set_name='train2017', transform=transforms.Compose([Normalizer(), Resizer()]))
+	elif parser.dataset == 'csv':
+		dataset_val = CSVDataset(train_file=parser.csv_val, class_list=parser.csv_classes, transform=transforms.Compose([Normalizer(), Resizer()]))
+	else:
+		raise ValueError('Dataset type not understood (must be csv or coco), exiting.')
+
+	sampler_val = AspectRatioBasedSampler(dataset_val, batch_size=1, drop_last=False)
+	dataloader_val = DataLoader(dataset_val, num_workers=1, collate_fn=collater, batch_sampler=sampler_val)
+
+	retinanet = torch.load(parser.model)
+
 	use_gpu = True
 
 	if use_gpu:
@@ -61,26 +54,6 @@ def main(args=None):
 
 	unnormalize = UnNormalizer()
 
-	path = '/home/train_images/image38003.jpg'
-
-	img = skimage.io.imread(path)
-
-	if len(img.shape) == 2:
-		img = skimage.color.gray2rgb(img)
-
-	img =  img.astype(np.float32) / 255.0
-
-	img_tensor = torch.tensor(img, dtype=torch.float32)
-	img_tensor = img_tensor.unsqueeze(0)
-	img_tensor = img_tensor.permute(0, 3, 1, 2)
-	print(img_tensor.size())
-	print(type(img_tensor))
-	with torch.no_grad():
-		scores, classification, transformed_anchors = retinanet(img_tensor.cuda().float())
-		print(transformed_anchors)
-	print(type(img))
-
-	'''
 	def draw_caption(image, box, caption):
 
 		b = np.array(box).astype(int)
@@ -120,7 +93,7 @@ def main(args=None):
 			cv2.imwrite(os.path.join('/home/result_img',str(idx)+'.jpg'),img)
 			# cv2.imshow('img', img)
 			# cv2.waitKey(0)
-			'''
+
 
 
 
