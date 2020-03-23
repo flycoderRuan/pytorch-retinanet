@@ -140,7 +140,9 @@ class CSVDataset(Dataset):
         # parse the provided class file
         try:
             with self._open_for_csv(self.class_list) as file:
+
                 self.classes = self.load_classes(csv.reader(file, delimiter=','))#返回的是字典的键值对
+
         except ValueError as e:
             raise_from(ValueError('invalid CSV class file: {}: {}'.format(self.class_list, e)), None)
 
@@ -151,6 +153,7 @@ class CSVDataset(Dataset):
         # csv with img_path, x1, y1, x2, y2, class_name
         try:
             with self._open_for_csv(self.train_file) as file:
+
                 #self.image_data是字典类型的键值对
                 self.image_data = self._read_annotations(csv.reader(file, delimiter=','), self.classes)
         except ValueError as e:
@@ -191,6 +194,7 @@ class CSVDataset(Dataset):
                 class_name, class_id = row
             except ValueError:
                 raise_from(ValueError('line {}: format should be \'class_name,class_id\''.format(line)), None)
+
             #确保class_id是整形
             class_id = self._parse(class_id, int, 'line {}: malformed class ID: {{}}'.format(line))
 

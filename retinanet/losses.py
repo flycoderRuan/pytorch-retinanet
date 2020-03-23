@@ -47,8 +47,17 @@ class FocalLoss(nn.Module):
             bbox_annotation = bbox_annotation[bbox_annotation[:, 4] != -1]
 
             if bbox_annotation.shape[0] == 0:
+
                 regression_losses.append(torch.tensor(0).float().cuda())
                 classification_losses.append(torch.tensor(0).float().cuda())
+# =======
+#                 if torch.cuda.is_available():
+#                     regression_losses.append(torch.tensor(0).float().cuda())
+#                     classification_losses.append(torch.tensor(0).float().cuda())
+#                 else:
+#                     regression_losses.append(torch.tensor(0).float())
+#                     classification_losses.append(torch.tensor(0).float())
+# >>>>>>> a76e56eb537be476abc914587ae92ab542e2b3e4
 
                 continue
 
@@ -63,12 +72,21 @@ class FocalLoss(nn.Module):
 
             # compute the loss for classification
             targets = torch.ones(classification.shape) * -1
+
             targets = targets.cuda()
 
             targets[torch.lt(IoU_max, 0.4), :] = 0
 
             #torch.ge(input, other, out=None) → Tensor
             #逐元素比较input和other，即是否 input>=otherinput>=other。  
+# =======
+#
+#             if torch.cuda.is_available():
+#                 targets = targets.cuda()
+#
+#             targets[torch.lt(IoU_max, 0.4), :] = 0
+#
+# >>>>>>> a76e56eb537be476abc914587ae92ab542e2b3e4
             positive_indices = torch.ge(IoU_max, 0.5)
 
             num_positive_anchors = positive_indices.sum()
@@ -78,7 +96,14 @@ class FocalLoss(nn.Module):
             targets[positive_indices, :] = 0
             targets[positive_indices, assigned_annotations[positive_indices, 4].long()] = 1
 
+
             alpha_factor = torch.ones(targets.shape).cuda() * alpha
+# =======
+#             if torch.cuda.is_available():
+#                 alpha_factor = torch.ones(targets.shape).cuda() * alpha
+#             else:
+#                 alpha_factor = torch.ones(targets.shape) * alpha
+# >>>>>>> a76e56eb537be476abc914587ae92ab542e2b3e4
 
             alpha_factor = torch.where(torch.eq(targets, 1.), alpha_factor, 1. - alpha_factor)
             focal_weight = torch.where(torch.eq(targets, 1.), 1. - classification, classification)
@@ -89,7 +114,14 @@ class FocalLoss(nn.Module):
             # cls_loss = focal_weight * torch.pow(bce, gamma)
             cls_loss = focal_weight * bce
 
+
             cls_loss = torch.where(torch.ne(targets, -1.0), cls_loss, torch.zeros(cls_loss.shape).cuda())
+# =======
+#             if torch.cuda.is_available():
+#                 cls_loss = torch.where(torch.ne(targets, -1.0), cls_loss, torch.zeros(cls_loss.shape).cuda())
+#             else:
+#                 cls_loss = torch.where(torch.ne(targets, -1.0), cls_loss, torch.zeros(cls_loss.shape))
+# >>>>>>> a76e56eb537be476abc914587ae92ab542e2b3e4
 
             classification_losses.append(cls_loss.sum()/torch.clamp(num_positive_anchors.float(), min=1.0))
 
@@ -120,7 +152,14 @@ class FocalLoss(nn.Module):
                 targets = torch.stack((targets_dx, targets_dy, targets_dw, targets_dh))
                 targets = targets.t()
 
+
                 targets = targets/torch.Tensor([[0.1, 0.1, 0.2, 0.2]]).cuda()
+# =======
+#                 if torch.cuda.is_available():
+#                     targets = targets/torch.Tensor([[0.1, 0.1, 0.2, 0.2]]).cuda()
+#                 else:
+#                     targets = targets/torch.Tensor([[0.1, 0.1, 0.2, 0.2]])
+# >>>>>>> a76e56eb537be476abc914587ae92ab542e2b3e4
 
                 negative_indices = 1 + (~positive_indices)
 
@@ -133,7 +172,14 @@ class FocalLoss(nn.Module):
                 )
                 regression_losses.append(regression_loss.mean())
             else:
+
                 regression_losses.append(torch.tensor(0).float().cuda())
+# =======
+#                 if torch.cuda.is_available():
+#                     regression_losses.append(torch.tensor(0).float().cuda())
+#                 else:
+#                     regression_losses.append(torch.tensor(0).float())
+# >>>>>>> a76e56eb537be476abc914587ae92ab542e2b3e4
 
         return torch.stack(classification_losses).mean(dim=0, keepdim=True), torch.stack(regression_losses).mean(dim=0, keepdim=True)
 

@@ -65,7 +65,6 @@ def main(args=None):
 
     else:
         raise ValueError('Dataset type not understood (must be csv or coco), exiting.')
-    
     #决定图片数据集的顺序和batch_size,返回的是图片的分组
     sampler = AspectRatioBasedSampler(dataset_train, batch_size=2, drop_last=False)
     dataloader_train = DataLoader(dataset_train, num_workers=3, collate_fn=collater, batch_sampler=sampler)
@@ -95,12 +94,22 @@ def main(args=None):
 
     #多GPU运行
     retinanet = torch.nn.DataParallel(retinanet).cuda()
+# =======
+#         if torch.cuda.is_available():
+#             retinanet = retinanet.cuda()
+#
+#     if torch.cuda.is_available():
+#         retinanet = torch.nn.DataParallel(retinanet).cuda()
+#     else:
+#         retinanet = torch.nn.DataParallel(retinanet)
+# >>>>>>> a76e56eb537be476abc914587ae92ab542e2b3e4
 
     retinanet.training = True
 
     optimizer = optim.Adam(retinanet.parameters(), lr=1e-5)
 
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=3, verbose=True)
+
 
     #collections:模块实现了特定目标的容器，以提供Python标准内建容器 dict、list、set、tuple 的替代选择
     #collections.deque:返回双向队列对象，最长长度为500
@@ -126,6 +135,13 @@ def main(args=None):
 
                 classification_loss, regression_loss = retinanet([data['img'].cuda().float(), data['annot']])
 
+# =======
+#                 if torch.cuda.is_available():
+#                     classification_loss, regression_loss = retinanet([data['img'].cuda().float(), data['annot']])
+#                 else:
+#                     classification_loss, regression_loss = retinanet([data['img'].float(), data['annot']])
+#
+# >>>>>>> a76e56eb537be476abc914587ae92ab542e2b3e4
                 classification_loss = classification_loss.mean()
                 regression_loss = regression_loss.mean()
 
@@ -141,6 +157,7 @@ def main(args=None):
                 torch.nn.utils.clip_grad_norm_(retinanet.parameters(), 0.1)
 
                 #更新所有的参数，一旦梯度被如backward()之类的函数计算好后，我们就可以调用这个函数
+
                 optimizer.step()
 
                 loss_hist.append(float(loss))
@@ -168,7 +185,6 @@ def main(args=None):
             print('Evaluating dataset')
 
             mAP = csv_eval.evaluate(dataset_val, retinanet)
-
         #optimizer.step()通常用在每个mini-batch之中，而scheduler.step()通常用在epoch里面
         #有用了optimizer.step()，模型才会更新，而scheduler.step()是对lr进行调整。
         scheduler.step(np.mean(epoch_loss))

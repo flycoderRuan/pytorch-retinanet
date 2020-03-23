@@ -36,6 +36,7 @@ class BasicBlock(nn.Module):
         if self.downsample is not None:
             residual = self.downsample(x)
 
+
         #就是 ResNet 的精髓，在输出上叠加了输入 residual
         out += residual
         out = self.relu(out)
@@ -89,11 +90,26 @@ class BBoxTransform(nn.Module):
     def __init__(self, mean=None, std=None):
         super(BBoxTransform, self).__init__()
         if mean is None:
+
             self.mean = torch.from_numpy(np.array([0, 0, 0, 0]).astype(np.float32)).cuda()
         else:
             self.mean = mean
         if std is None:
             self.std = torch.from_numpy(np.array([0.1, 0.1, 0.2, 0.2]).astype(np.float32)).cuda()
+# =======
+#             if torch.cuda.is_available():
+#                 self.mean = torch.from_numpy(np.array([0, 0, 0, 0]).astype(np.float32)).cuda()
+#             else:
+#                 self.mean = torch.from_numpy(np.array([0, 0, 0, 0]).astype(np.float32))
+#
+#         else:
+#             self.mean = mean
+#         if std is None:
+#             if torch.cuda.is_available():
+#                 self.std = torch.from_numpy(np.array([0.1, 0.1, 0.2, 0.2]).astype(np.float32)).cuda()
+#             else:
+#                 self.std = torch.from_numpy(np.array([0.1, 0.1, 0.2, 0.2]).astype(np.float32))
+# >>>>>>> a76e56eb537be476abc914587ae92ab542e2b3e4
         else:
             self.std = std
 

@@ -100,6 +100,7 @@ class RegressionModel(nn.Module):
 
         # out is B x C x W x H, with C = 4*num_anchors
         #permute:将out的维度换位。
+
         out = out.permute(0, 2, 3, 1)
 
         return out.contiguous().view(out.shape[0], -1, 4)
@@ -219,6 +220,7 @@ class ResNet(nn.Module):
                 nn.BatchNorm2d(planes * block.expansion),
             )
 
+
         #该部分是将每个blocks的第一个residual结构保存在layers列表中
         layers = [block(self.inplanes, planes, stride, downsample)]
 
@@ -254,6 +256,7 @@ class ResNet(nn.Module):
 
         features = self.fpn([x2, x3, x4])
 
+
         #矩阵拼接
         regression = torch.cat([self.regressionModel(feature) for feature in features], dim=1)
 
@@ -274,6 +277,7 @@ class ResNet(nn.Module):
 
             if scores_over_thresh.sum() == 0:
                 # no boxes to NMS, just return
+
                 # return [torch.zeros(0), torch.zeros(0), torch.zeros(0, 4)]
                 return [torch.zeros([1]).cuda(0), torch.zeros([1]).cuda(0), torch.zeros([1, 4]).cuda(0)]
 
@@ -295,8 +299,10 @@ def resnet18(num_classes, pretrained=False, **kwargs):
     """
     model = ResNet(num_classes, BasicBlock, [2, 2, 2, 2], **kwargs)
     if pretrained:
+
         #用 model 的 load_state_dict 方法用预训练的模型参数来初始化你构建的网络结构，该方法有一个重要参数是 strict，
         #默认值为 True，表示预训练模型的层和你的网络结构层严格对应相等（比如维度和层名）
+
         model.load_state_dict(model_zoo.load_url(model_urls['resnet18'], model_dir='.'), strict=False)
     return model
 

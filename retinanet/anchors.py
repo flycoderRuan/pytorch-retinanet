@@ -34,7 +34,14 @@ class Anchors(nn.Module):
 
         all_anchors = np.expand_dims(all_anchors, axis=0)
 
+<<<<<<< HEAD
         return torch.from_numpy(all_anchors.astype(np.float32)).cuda()
+=======
+        if torch.cuda.is_available():
+            return torch.from_numpy(all_anchors.astype(np.float32)).cuda()
+        else:
+            return torch.from_numpy(all_anchors.astype(np.float32))
+>>>>>>> a76e56eb537be476abc914587ae92ab542e2b3e4
 
 def generate_anchors(base_size=16, ratios=None, scales=None):
     """

@@ -51,6 +51,15 @@ def main(args=None):
 
 	if use_gpu:
 		retinanet = retinanet.cuda()
+# =======
+# 		if torch.cuda.is_available():
+# 			retinanet = retinanet.cuda()
+#
+# 	if torch.cuda.is_available():
+# 		retinanet = torch.nn.DataParallel(retinanet).cuda()
+# 	else:
+# 		retinanet = torch.nn.DataParallel(retinanet)
+# >>>>>>> a76e56eb537be476abc914587ae92ab542e2b3e4
 
 	retinanet.eval()
 
@@ -66,7 +75,14 @@ def main(args=None):
 
 		with torch.no_grad():
 			st = time.time()
+
 			scores, classification, transformed_anchors = retinanet(data['img'].cuda().float())
+# =======
+# 			if torch.cuda.is_available():
+# 				scores, classification, transformed_anchors = retinanet(data['img'].cuda().float())
+# 			else:
+# 				scores, classification, transformed_anchors = retinanet(data['img'].float())
+# >>>>>>> a76e56eb537be476abc914587ae92ab542e2b3e4
 			print('Elapsed time: {}'.format(time.time()-st))
 			idxs = np.where(scores.cpu()>0.5)
 			img = np.array(255 * unnormalize(data['img'][0, :, :, :])).copy()
